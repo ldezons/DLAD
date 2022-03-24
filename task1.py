@@ -51,7 +51,7 @@ def bird_eye_view(x, y, z, intensity, side_range, fwd_range, res, min_height, ma
     im = Image.fromarray(im)
 
     # SAVE THE IMAGE
-    im.show()
+    im.rotate(-90, expand=True).show()
 
 def main():
     data_path = os.path.join('data', 'demo.p')
