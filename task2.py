@@ -16,7 +16,7 @@ def main():
     cars = data['objects']
     nb_points = velo.shape[0]
 
-    rectified_velo = (nor_trans@int_trans@velo.T).T #Rectifying the image
+    rectified_velo = np.matmul(nor_trans,np.matmul(int_trans,velo.T)).T #Rectifying the image
     rectified_velo_scaled = rectified_velo/rectified_velo[:,2].reshape(-1,1) #Scaling the image by dividing by the z-component
 
     xline = rectified_velo_scaled[velo[:,0]>0][:,0] #Splitting the data in two differents vectors x and y while only keeping the values with x>0
