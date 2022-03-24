@@ -66,6 +66,7 @@ def draw_box(car, nor_trans):
     box_plot(box_cam_scaled, 4, 5)
     box_plot(box_cam_scaled, 4, 6)
     box_plot(box_cam_scaled, 5, 7)
+    #love la ghaz
     box_plot(box_cam_scaled, 6, 7)
 
 
