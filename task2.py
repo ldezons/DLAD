@@ -4,7 +4,7 @@ import os
 import numpy as np
 from load_data import load_data
 def main():
-    data_path = os.path.join('data', 'demo.p')
+    data_path = os.path.join('data', 'data.p')
     data = load_data(data_path)
 
     int_trans = data['T_cam0_velo']
@@ -28,11 +28,14 @@ def main():
 
     coloring = coloring[velo[:,0]>0]/255
     for car in cars:
+
         draw_box(car,nor_trans)
-    plt.scatter(xline, yline,s=0.3,c=coloring)
+    plt.scatter(xline, yline,s=0.01,c=coloring)
     plt.imshow(image)
     plt.axis('off')
+    plt.savefig("task2.jpeg")
     plt.show()
+
 
 
 def draw_box(car, nor_trans):

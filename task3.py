@@ -27,7 +27,7 @@ def classify(x):
 
 def main():
 
-    data_path = os.path.join('data', 'demo.p')
+    data_path = os.path.join('data', 'data.p')
     data = load_data(data_path)
     int_trans = data['T_cam0_velo']
     nor_trans = data['P_rect_20']
@@ -43,7 +43,7 @@ def main():
     #Belonging of the points
     nb = classify(theta).astype(int)
 
-    #Modulo 4 as we use only 4 colors as stated in the example
+    #Modulo 4 as we use only 4 colors as done in the example
     laser_ID = nb % 4
 
     color = np.array(['#FF00FF',             #magenta
@@ -66,6 +66,7 @@ def main():
     plt.scatter(x_final[x>0],y_final[x>0],s=0.05,c=color_img.flatten())
     plt.imshow(image)
     plt.axis('off')
+    plt.savefig("task3.jpeg")
     plt.show()
 
 if __name__ == '__main__':
