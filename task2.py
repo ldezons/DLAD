@@ -4,7 +4,7 @@ import os
 import numpy as np
 from load_data import load_data
 def main():
-    data_path = os.path.join('data', 'demo.p')
+    data_path = os.path.join('data', 'data.p')
     data = load_data(data_path)
 
     int_trans = data['T_cam0_velo']
@@ -16,7 +16,7 @@ def main():
     cars = data['objects']
     nb_points = velo.shape[0]
 
-    rectified_velo = (nor_trans@int_trans@velo.T).T #Rectifying the image
+    rectified_velo = np.matmul(nor_trans,np.matmul(int_trans,velo.T)).T #Rectifying the image
     rectified_velo_scaled = rectified_velo/rectified_velo[:,2].reshape(-1,1) #Scaling the image by dividing by the z-component
 
     xline = rectified_velo_scaled[velo[:,0]>0][:,0] #Splitting the data in two differents vectors x and y while only keeping the values with x>0
@@ -28,11 +28,14 @@ def main():
 
     coloring = coloring[velo[:,0]>0]/255
     for car in cars:
+
         draw_box(car,nor_trans)
-    plt.scatter(xline, yline,s=0.3,c=coloring)
+    plt.scatter(xline, yline,s=0.01,c=coloring)
     plt.imshow(image)
     plt.axis('off')
+    plt.savefig("task2.jpeg")
     plt.show()
+
 
 
 def draw_box(car, nor_trans):
@@ -46,15 +49,16 @@ def draw_box(car, nor_trans):
 
     ccoor = np.array(car[11:14]).reshape(-1,1) #Car Coordinates in camera 0 coordinates
 
+    #We Ensure that we define this from the furthest x to the closest x coordinate.
     boundary = np.array([[w/2, 0, l/2], [w/2, -h, l/2], [w/2, 0 , -l/2], [w/2, -h, -l/2],
                       [-w/2, 0, l/2], [-w/2, -h, l/2], [-w/2, 0 , -l/2], [-w/2, -h, -l/2]] )
 
-    box = np.tile(ccoor, (1,8))  + rot_mat@ boundary.T #Translating the boundary by the car coordinates
+    box = np.tile(ccoor, (1,8))  + np.matmul(rot_mat, boundary.T) #Translating the boundary by the car coordinates
     hom_box = np.vstack((box,np.ones((1,8)))) #Transforming it to homogeneous coord
-    box_cam = nor_trans @ hom_box
-    print(box_cam[2,:].reshape(1,-1))
-    box_cam_scaled = box_cam/box_cam[2,:].reshape(1,-1)
+    box_cam = np.matmul(nor_trans, hom_box)
 
+    box_cam_scaled = box_cam/box_cam[2,:].reshape(1,-1)
+    #Now we plot every line to make sure that every point is linked to the other.
     box_plot(box_cam_scaled, 0, 1)
     box_plot(box_cam_scaled, 0, 2)
     box_plot(box_cam_scaled, 0, 4)
@@ -66,7 +70,6 @@ def draw_box(car, nor_trans):
     box_plot(box_cam_scaled, 4, 5)
     box_plot(box_cam_scaled, 4, 6)
     box_plot(box_cam_scaled, 5, 7)
-    #love la ghaz
     box_plot(box_cam_scaled, 6, 7)
 
 

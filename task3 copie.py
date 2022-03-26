@@ -5,7 +5,7 @@ from load_data import load_data
 import matplotlib.pyplot as plt
 
 def main():
-    data = load_data('data/demo.p')
+    data = load_data('data/data.p')
     img = data['image_2']
     lidar = data['velodyne'][:,0:3]  #Take only x y and z
     x = lidar[:,0].reshape(-1,1)
