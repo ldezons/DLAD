@@ -49,12 +49,13 @@ def bird_eye_view(x, y, z, intensity, side_range, fwd_range, res, min_height, ma
 
     # Convert from numpy array to a PIL image
     im = Image.fromarray(im)
+    im.save("task1.jpeg")
 
     # SAVE THE IMAGE
     im.rotate(-90, expand=True).show()
 
 def main():
-    data_path = os.path.join('data', 'demo.p')
+    data_path = os.path.join('data', 'data.p')
     data = load_data(data_path)
     x = []
     y = []
