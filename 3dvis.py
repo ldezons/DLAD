@@ -7,6 +7,7 @@ from vispy.scene import visuals, SceneCanvas
 import numpy as np
 import os
 from load_data import load_data
+import math
 
 class Visualizer():
     def __init__(self):
@@ -30,19 +31,19 @@ class Visualizer():
                                    [5,1],[5,4],[5,6],
                                    [7,3],[7,4],[7,6]])
 
-    def update(self, points, data ):
+    def update(self, points, sem_labels, color_map):
         '''
         :param points: point cloud data
                         shape (N, 3)          
         Task 2: Change this function such that each point
         is colored depending on its semantic label
         '''
-        for i in len(points):
-            l=data['color_map'][data['sem_label'][i]]
-            points[i, 0]=  l[0]
-            points[i, 1] = l[1]
-            points[i, 2] = l[2]
-        self.sem_vis.set_data(points, size=3)
+        number_pt = sem_labels.shape[0]
+        rgb = np.zeros((number_pt, 3))
+        for i in range(number_pt):
+            rgb[i] = color_map[sem_labels[i, 0]]
+        rgb[:, 0], rgb[:, 2] = rgb[:, 2], rgb[:, 0].copy()
+        self.sem_vis.set_data(points, size=3, edge_color=rgb / 255)
     
     def update_boxes(self, corners):
         '''
@@ -71,12 +72,24 @@ class Visualizer():
 if __name__ == '__main__':
     data = load_data('data/demo.p') # Change to data.p for your final submission 
     visualizer = Visualizer()
-    visualizer.update(data['velodyne'][:,:3])
-    '''
-    Task 2: Compute all bounding box corners from given
-    annotations. You can visualize the bounding boxes using
-    visualizer.update_boxes(corners)
-    '''
+    visualizer.update(data['velodyne'][:,:3], data['sem_label'], data['color_map'])
+
+    box_corners = np.empty((1,8,3))
+    for car in data['objects']:
+        h = car[8]
+        l = car[9]
+        w = car[10]
+        box_center = np.asarray(car[11:14]).reshape(-1, 1)
+        angle = car[14]
+        summits = np.asarray([[w / 2, 0, l / 2], [w / 2, -h, l / 2], [w / 2, 0, -l / 2], [w / 2, -h, -l / 2],
+                              [-w / 2, 0, l / 2], [-w / 2, -h, l / 2], [-w / 2, 0, -l / 2], [-w / 2, -h, -l / 2]])
+
+        Rot = np.asarray([[math.cos(angle), 0, math.sin(angle)], [0, 1, 0], [-math.sin(angle), 0, math.cos(angle)]])
+        points = np.matmul(summits, Rot).T + np.tile(box_center, ((1,8)))
+        points = np.concatenate((points, np.ones((1,8))))
+        points = (np.matmul(np.linalg.inv(data['T_cam0_velo']), points)).T
+        box_corners = np.vstack((box_corners, points[:, 0:3].reshape(1, 8, 3)))
+    visualizer.update_boxes((box_corners))
     vispy.app.run()
 
 
