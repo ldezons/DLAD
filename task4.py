@@ -4,9 +4,16 @@ import numpy as np
 import math
 import data_utils as d
 
-def main():
+def main(image_number):
+    if image_number<10:
+        image_number_string = '00%s'%image_number
+    elif image_number>=10 and image_number<100:
+        image_number_string = '0%s'%image_number
+    elif image_number >=100:
+        image_number_string = '%s'%image_number
+
     #We import lidar's data
-    data_path = os.path.join('data/problem_4/velodyne_points/data/0000000037.bin')
+    data_path = os.path.join('data/problem_4/velodyne_points/data/0000000%s.bin'%image_number_string)
     lidar = d.load_from_bin(data_path)
 
     x_lidar = lidar[:,0].flatten()
@@ -29,7 +36,7 @@ def main():
     #we compute de distance between the points and the  car to associate each point to the correct color
     dist = np.sqrt(x_lidar * x_lidar + y_lidar * y_lidar + z_lidar * z_lidar).reshape(-1,1)
     color = d.depth_color(dist, dist[lidar[:, 0]>0].min(), dist[lidar[:, 0]>0].max())[lidar[:, 0]>0].reshape(-1,1)
-    image = plt.imread('data/problem_4/image_02/data/0000000037.png')
+    image = plt.imread('data/problem_4/image_02/data/0000000%s.png'%image_number_string)
 
     # Uncorrected plot
     im_proj = d.print_projection_plt(np.vstack((x_cam, y_cam)), color, (image * 255).astype(np.uint8))
@@ -38,13 +45,12 @@ def main():
 
     
     # We then add the motion distortion
-    velocity = d.load_oxts_velocity('data/problem_4/oxts/data/0000000037.txt')
-    angular_rate_f, angular_rate_l, angular_rate_u = d.load_oxts_angular_rate('data/problem_4/oxts/data/0000000037.txt')
-    t0 = d.compute_timestamps('data/problem_4/velodyne_points/timestamps_start.txt', 37)
-    tf = d.compute_timestamps('data/problem_4/velodyne_points/timestamps_end.txt', 37)
-    t_cam = d.compute_timestamps('data/problem_4/velodyne_points/timestamps.txt', 37)
+    velocity = d.load_oxts_velocity('data/problem_4/oxts/data/0000000%s.txt'%image_number_string )
+    angular_rate_f, angular_rate_l, angular_rate_u = d.load_oxts_angular_rate('data/problem_4/oxts/data/0000000%s.txt'%image_number_string)
+    t0 = d.compute_timestamps('data/problem_4/velodyne_points/timestamps_start.txt', image_number)
+    tf = d.compute_timestamps('data/problem_4/velodyne_points/timestamps_end.txt', image_number)
+    t_cam = d.compute_timestamps('data/problem_4/velodyne_points/timestamps.txt', image_number)
 
-    print(t_cam, t0, tf)
     # velodyne to imu referential
     R_imu_to_velo, T_imu_to_velo = d.calib_velo2cam('data/problem_4/calib_imu_to_velo.txt')
     imu_coord = np.matmul(np.linalg.inv(R_imu_to_velo), lidar.T - np.tile(T_imu_to_velo, (1, lidar.shape[0])))
@@ -81,7 +87,6 @@ def main():
     depth_ = np.sqrt(x_rect * x_rect + y_rect * y_rect + z_rect * z_rect)
 
     # Then we project onto the image and plot the depth colored points
-    print(T)
 
     cam_coord_rect = np.matmul(R, lidar_rect) + np.tile(T, (1, lidar_rect.shape[1]))
 
@@ -102,5 +107,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(37)
 
